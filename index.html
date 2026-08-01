@@ -293,12 +293,17 @@
         }
 
         main {
-            padding: 28px 20px 80px;
+            padding: 8px 20px 80px;
         }
+
+        #main-map { display: none; }
 
         section {
             margin: 34px 0;
         }
+
+        main > section.tab-panel.active { margin-top: 12px; }
+        #itinerario > #mapa { margin-top: 0; }
 
         h2 {
             border-bottom: 3px solid var(--gold);
@@ -1240,19 +1245,24 @@
                 if (!mapEl) return;
                 const map = L.map('map').setView([35.6895, 139.6917], 12);
                 // Use HOT tile server for prototyping to avoid tile usage referer blocks
-                const tileUrl = MAPTILER_KEY
-                    ? `https://api.maptiler.com/maps/streets-v4/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}&language=es`
-                    : 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png';
+                const tileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
                 const tileLayer = L.tileLayer(tileUrl, {
-                    attribution: '&copy; MapTiler &amp; OpenStreetMap contributors',
+                    attribution: '&copy; CARTO &amp; OpenStreetMap contributors',
                     minZoom: 1,
                     maxZoom: 19,
                     crossOrigin: true
                 }).addTo(map);
                 let tileErrors = 0;
+                let fallbackLayer;
                 tileLayer.on('tileerror', () => {
                     tileErrors += 1;
-                    if (tileErrors >= 3) showMapFallback('No se pudo cargar el mapa base. Los lugares siguen disponibles en la lista.');
+                    if (tileErrors >= 3 && !fallbackLayer) {
+                        map.removeLayer(tileLayer);
+                        fallbackLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+                            attribution: '&copy; OpenStreetMap contributors &amp; Humanitarian OpenStreetMap Team',
+                            maxZoom: 19
+                        }).addTo(map);
+                    }
                 });
 
                 Promise.resolve(MAP_PLACES)
