@@ -1,0 +1,10 @@
+[
+  {"id":1,"name":"Senso-ji (Asakusa)","lat":35.7148,"lng":139.7967,"category":"Templo"},
+  {"id":2,"name":"Ueno Park","lat":35.7138,"lng":139.7745,"category":"Parque / Museo"},
+  {"id":3,"name":"Tsukiji Outer Market","lat":35.6655,"lng":139.7708,"category":"Mercado / Comida"},
+  {"id":4,"name":"Meiji Jingu","lat":35.6764,"lng":139.6993,"category":"Santuario"},
+  {"id":5,"name":"Gion (Kioto)","lat":35.0037,"lng":135.7788,"category":"Barrio tradicional"},
+  {"id":6,"name":"Kiyomizu-dera (Kioto)","lat":34.9949,"lng":135.7850,"category":"Templo"},
+  {"id":7,"name":"Fushimi Inari (Kioto)","lat":34.9671,"lng":135.7727,"category":"Santuario"},
+  {"id":8,"name":"Arashiyama Bamboo Grove","lat":35.0094,"lng":135.6670,"category":"Atracción"}
+]

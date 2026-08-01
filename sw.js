@@ -5,7 +5,10 @@ const ASSETS = [
   './manifest.json',
   './icon.svg',
   './offline.html',
-  './sw.js'
+  './sw.js',
+  './data/places-sample.json',
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
 ];
 
 self.addEventListener('install', event => {

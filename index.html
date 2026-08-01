@@ -12,6 +12,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="icon.svg" sizes="64x64" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icon.svg">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <title>Guía Japón 2026</title>
     <style>
         :root {
@@ -183,6 +184,18 @@
             z-index: 999;
             box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
             scrollbar-width: thin;
+        }
+
+        /* Mapa de sugerencias */
+        #map {
+            width: 100%;
+            height: 480px;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+        }
+
+        #map-itinerary {
+            margin-top: 12px;
         }
 
         .tab-bar::-webkit-scrollbar {
@@ -437,6 +450,18 @@
         <button id="tab-trucos" class="tab" role="tab" aria-selected="false" aria-controls="trucos" data-target="trucos">Trucos</button>
         <button id="tab-planesb" class="tab" role="tab" aria-selected="false" aria-controls="planesb" data-target="planesb">Planes B</button>
     </div>
+    <main id="main-map">
+        <section id="mapa" role="region" aria-label="Mapa de sugerencias">
+            <h2>Mapa de sugerencias</h2>
+            <div class="card">
+                <div id="map"></div>
+                <div id="map-itinerary">
+                    <h3>Itinerario local</h3>
+                    <ul id="itinerary-list"></ul>
+                </div>
+            </div>
+        </section>
+    </main>
     <main id="main-content">
         <section id="resumen" class="tab-panel active" role="tabpanel" aria-labelledby="tab-resumen">
             <h2>Resumen</h2>
@@ -940,6 +965,7 @@
             setupNavToggle();
             setupTabs();
             registerServiceWorker();
+            setupMap();
         });
 
         function setupNavToggle() {
@@ -1037,6 +1063,67 @@
                     .then(() => console.log('Service worker registrado.'))
                     .catch(error => console.warn('Error al registrar service worker:', error));
             });
+        }
+
+        // Map setup using Leaflet and local sample data
+        function setupMap() {
+            // load Leaflet script dynamically
+            if (typeof L === 'undefined') {
+                const s = document.createElement('script');
+                s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+                s.onload = initLeaflet;
+                document.head.appendChild(s);
+            } else {
+                initLeaflet();
+            }
+
+            function initLeaflet() {
+                const mapEl = document.getElementById('map');
+                if (!mapEl) return;
+                const map = L.map('map').setView([35.6895, 139.6917], 12);
+                // Use HOT tile server for prototyping to avoid tile usage referer blocks
+                L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors &amp; Humanitarian OpenStreetMap Team',
+                    maxZoom: 19
+                }).addTo(map);
+
+                fetch('data/places-sample.json')
+                    .then(r => r.json())
+                    .then(data => {
+                        data.forEach(place => {
+                            const marker = L.marker([place.lat, place.lng]).addTo(map);
+                            const content = `<strong>${place.name}</strong><div>${place.category}</div><div style="margin-top:8px;"><button data-id="${place.id}" class="add-itinerary">Añadir al itinerario</button></div>`;
+                            marker.bindPopup(content);
+                        });
+
+                        map.on('popupopen', e => {
+                            const btn = e.popup._contentNode.querySelector('.add-itinerary');
+                            if (btn) btn.addEventListener('click', () => addToItinerary(btn.dataset.id));
+                        });
+
+                        renderItinerary();
+                    })
+                    .catch(err => console.warn('No se pudieron cargar los datos del mapa:', err));
+
+                function addToItinerary(id) {
+                    fetch('data/places-sample.json').then(r => r.json()).then(data => {
+                        const place = data.find(p => String(p.id) === String(id));
+                        if (!place) return;
+                        const it = JSON.parse(localStorage.getItem('itinerary') || '[]');
+                        if (it.find(i => i.id === place.id)) { alert('Ya está en el itinerario'); return; }
+                        it.push(place);
+                        localStorage.setItem('itinerary', JSON.stringify(it));
+                        renderItinerary();
+                    });
+                }
+
+                function renderItinerary() {
+                    const ul = document.getElementById('itinerary-list');
+                    if (!ul) return;
+                    const it = JSON.parse(localStorage.getItem('itinerary') || '[]');
+                    ul.innerHTML = it.map(p => `<li>${p.name} — <small>${p.category}</small></li>`).join('') || '<li>(vacío)</li>';
+                }
+            }
         }
     </script>
 </body>
