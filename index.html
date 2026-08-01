@@ -4,113 +4,296 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="Plan interactivo de viaje a Japón 2026: itinerario, reservas, maletas y herramientas de viaje personalizadas.">
+    <meta name="theme-color" content="#222936">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Guía Japón 2026">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.svg" sizes="64x64" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon.svg">
     <title>Guía Japón 2026</title>
     <style>
         :root {
-            --bg: #f5f2ec;
-            --paper: #fff;
+            --bg: #f0ede6;
+            --surface: rgba(255, 255, 255, 0.9);
+            --paper: #ffffff;
             --ink: #202631;
-            --muted: #667085;
+            --muted: #6b7484;
             --accent: #8f2727;
+            --accent-soft: #dc8d87;
             --gold: #d2a24c;
-            --line: #ddd5c8
+            --line: #ddd5c8;
+            --shadow: 0 24px 60px rgba(20, 25, 37, 0.08);
+            --radius: 22px;
         }
 
         * {
-            box-sizing: border-box
+            box-sizing: border-box;
         }
 
         html {
-            scroll-behavior: smooth
+            scroll-behavior: smooth;
         }
 
         body {
             margin: 0;
+            min-height: 100vh;
             background: var(--bg);
             color: var(--ink);
-            font-family: Arial, Helvetica, sans-serif;
-            line-height: 1.55
-        }
-
-        header {
-            background: linear-gradient(135deg, #222936, #7a2222);
-            color: white;
-            padding: 52px 24px
+            font-family: Inter, Arial, Helvetica, sans-serif;
+            line-height: 1.6;
         }
 
         .wrap,
         main {
             max-width: 1080px;
-            margin: auto
+            margin: auto;
+        }
+
+        header .wrap {
+            position: relative;
+            z-index: 1;
         }
 
         h1 {
-            font-size: 3rem;
-            margin: 8px 0
+            font-size: clamp(2.1rem, 3.4vw, 3rem);
+            margin: 10px 0 8px;
+            line-height: 1.05;
         }
 
         .subtitle {
-            opacity: .9;
-            font-size: 1.1rem
+            opacity: .95;
+            font-size: 1.05rem;
+            max-width: 780px;
         }
 
         nav {
             position: sticky;
             top: 0;
-            background: #ffffffee;
+            background: rgba(255, 255, 255, 0.92);
             border-bottom: 1px solid var(--line);
-            z-index: 10
+            z-index: 20;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(14px);
         }
 
         nav .wrap {
             display: flex;
-            gap: 18px;
-            overflow: auto;
-            padding: 11px 20px
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 20px;
+            flex-wrap: wrap;
         }
 
-        nav a {
+        .nav-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .nav-brand {
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            color: var(--ink);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-size: 0.95rem;
+        }
+
+        .nav-toggle {
+            display: none;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            padding: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-toggle span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--ink);
+            margin: 4px 0;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            align-items: center;
+            width: auto;
+            margin-left: auto;
+            transition: max-height 0.3s ease;
+        }
+
+        .nav-links a {
             text-decoration: none;
             color: var(--ink);
             font-weight: 700;
-            white-space: nowrap
+            white-space: nowrap;
+            padding: 10px 14px;
+            border-radius: 999px;
+            transition: background 0.2s, color 0.2s;
         }
 
-        main {
-            padding: 28px 20px 70px
+        .nav-links a:hover,
+        .nav-links a:focus-visible {
+            background: #f8ebd8;
+        }
+
+        .nav-links.open {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding-bottom: 12px;
+        }
+
+        .nav-toggle:focus-visible,
+        .nav-links a:focus-visible,
+        .tool-card button:focus-visible {
+            outline: 2px solid rgba(143, 39, 39, 0.7);
+            outline-offset: 4px;
+        }
+
+        .tab-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid var(--line);
+            position: sticky;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 999;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+            scrollbar-width: thin;
+        }
+
+        .tab-bar::-webkit-scrollbar {
+            height: 7px;
+        }
+
+        .tab-bar::-webkit-scrollbar-thumb {
+            background: rgba(32, 38, 49, 0.3);
+            border-radius: 999px;
+        }
+
+        .tab {
+            border: none;
+            background: rgba(255,255,255,0.85);
+            color: var(--ink);
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 999px;
+            font-weight: 700;
+            white-space: nowrap;
+            transition: background 0.2s, color 0.2s, transform 0.2s;
+            min-width: max-content;
+        }
+
+        .tab:hover,
+        .tab:focus-visible {
+            background: #f8ebd8;
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        main section.tab-panel {
+            display: none;
+        }
+
+        main section.tab-panel.active {
+            display: block;
         }
 
         section {
-            margin: 34px 0
+            margin: 34px 0;
+            scroll-margin-top: 140px;
+        }
+
+        .skip-link {
+            position: absolute;
+            left: 16px;
+            top: 16px;
+            transform: translateY(-120%);
+            background: var(--accent);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 999px;
+            z-index: 30;
+            text-decoration: none;
+            transition: transform 0.2s ease;
+            font-size: 0.95rem;
+        }
+
+        .skip-link:focus-visible {
+            transform: translateY(0);
+        }
+
+        .card {
+            overflow: hidden;
+        }
+
+        main {
+            padding: 28px 20px 80px;
+        }
+
+        section {
+            margin: 34px 0;
         }
 
         h2 {
             border-bottom: 3px solid var(--gold);
-            padding-bottom: 8px
+            padding-bottom: 10px;
+            margin-bottom: 18px;
         }
 
         .card {
             background: var(--paper);
             border: 1px solid var(--line);
-            border-radius: 16px;
-            padding: 20px;
-            margin: 15px 0;
-            box-shadow: 0 4px 16px #0000000a
+            border-radius: 20px;
+            padding: 24px 24px 20px;
+            margin: 16px 0;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.06);
         }
 
-        .day {
-            border-left: 6px solid var(--accent)
+        .card.day {
+            border-left: 6px solid var(--accent);
+        }
+
+        .card.day h3 {
+            margin-top: 0;
         }
 
         .timeline {
             display: grid;
-            grid-template-columns: 150px 1fr;
-            gap: 8px 18px
+            grid-template-columns: 140px 1fr;
+            gap: 10px 18px;
         }
 
         .time {
             font-weight: 700;
-            color: var(--accent)
+            color: var(--accent);
         }
 
         table {
@@ -172,55 +355,90 @@
             color: var(--muted)
         }
 
-        @media(max-width:650px) {
+        @media(max-width:850px) {
+            .wrap,
+            main {
+                padding: 0 16px;
+            }
+
+            .hero-summary {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            }
+        }
+
+        @media(max-width:768px) {
             h1 {
-                font-size: 2.1rem
+                font-size: 2.1rem;
+            }
+
+            .nav-toggle {
+                display: flex;
+            }
+
+            .nav-links {
+                display: none;
+                width: 100%;
+            }
+
+            .nav-links.open {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 12px 0;
             }
 
             .timeline {
-                grid-template-columns: 1fr
+                grid-template-columns: 1fr;
             }
 
             .time {
-                margin-top: 8px
+                margin-top: 8px;
             }
         }
 
         @media print {
             nav {
-                display: none
+                display: none;
             }
 
             body {
-                background: white
+                background: white;
             }
 
             .card {
                 box-shadow: none;
-                break-inside: avoid
+                break-inside: avoid;
             }
 
             header {
                 background: white;
                 color: black;
-                border-bottom: 2px solid #333
+                border-bottom: 2px solid #333;
             }
         }
     </style>
 </head>
 
 <body>
-    <header>
-        <div class="wrap"><span class="badge">Versi&oacute;n actualizada</span>
-            <h1>Jap&oacute;n, d&iacute;a a d&iacute;a</h1>
-            <div class="subtitle">23 de octubre&ndash;5 de noviembre de 2026 &middot; 8 viajeros &middot; 4 habitaciones dobles &middot; Presupuesto aproximado: 3.000 &euro; por persona</div>
-        </div>
-    </header>
-    <nav>
-        <div class="wrap"><a href="#resumen">Resumen</a><a href="#itinerario">Itinerario</a><a href="#hoteles">Hoteles</a><a href="#maletas">Maletas</a><a href="#reservas">Reservas</a><a href="#presupuesto">Presupuesto</a><a href="#grupo">Grupo de 8</a><a href="#trucos">Trucos</a><a href="#planesb">Planes B</a></div>
-    </nav>
-    <main>
-        <section id="resumen">
+    <header><!-- Contenido del header eliminado por petición del usuario --></header>
+    <!-- Sección <nav> eliminada por petición del usuario -->
+    <div class="tab-bar" role="tablist" aria-label="Secciones principales">
+        <button id="tab-resumen" class="tab active" role="tab" aria-selected="true" aria-controls="resumen" data-target="resumen">Resumen</button>
+        <button id="tab-itinerario" class="tab" role="tab" aria-selected="false" aria-controls="itinerario" data-target="itinerario">Itinerario</button>
+        <button id="tab-hoteles" class="tab" role="tab" aria-selected="false" aria-controls="hoteles" data-target="hoteles">Hoteles</button>
+        <button id="tab-maletas" class="tab" role="tab" aria-selected="false" aria-controls="maletas" data-target="maletas">Maletas</button>
+        <button id="tab-reservas" class="tab" role="tab" aria-selected="false" aria-controls="reservas" data-target="reservas">Reservas</button>
+        <button id="tab-presupuesto" class="tab" role="tab" aria-selected="false" aria-controls="presupuesto" data-target="presupuesto">Presupuesto</button>
+        <button id="tab-grupo" class="tab" role="tab" aria-selected="false" aria-controls="grupo" data-target="grupo">Grupo</button>
+        <button id="tab-trucos" class="tab" role="tab" aria-selected="false" aria-controls="trucos" data-target="trucos">Trucos</button>
+        <button id="tab-planesb" class="tab" role="tab" aria-selected="false" aria-controls="planesb" data-target="planesb">Planes B</button>
+    </div>
+    <main id="main-content">
+        <section id="resumen" class="tab-panel active" role="tabpanel" aria-labelledby="tab-resumen">
             <h2>Resumen</h2>
             <div class="card">
                 <p><strong>Ruta final:</strong> Tokio &rarr; Hakone &rarr; Tokio &rarr; Kioto como base &rarr; Nara y Osaka &rarr; Hiroshima y Miyajima &rarr; Kurama y Kibune &rarr; Tokio.</p>
@@ -228,7 +446,7 @@
                 <p>Huecos de Tokio: <strong>27 por la tarde, Ginza</strong>; <strong>28 por la ma&ntilde;ana, Asakusa y Ueno</strong>; <strong>29 por la tarde, shinkansen a Kioto</strong>.</p>
             </div>
         </section>
-        <section id="itinerario">
+        <section id="itinerario" class="tab-panel" role="tabpanel" aria-labelledby="tab-itinerario">
             <h2>Itinerario d&iacute;a por d&iacute;a</h2>
             <article class="card day">
                 <h3>23 de octubre &mdash; Salida de M&aacute;laga</h3>
@@ -451,7 +669,7 @@
                 </div>
             </article>
         </section>
-        <section id="hoteles">
+        <section id="hoteles" class="tab-panel" role="tabpanel" aria-labelledby="tab-hoteles">
             <h2>Hoteles recomendados</h2>
             <table>
                 <thead>
@@ -480,7 +698,7 @@
                 </tbody>
             </table>
         </section>
-        <section id="maletas">
+        <section id="maletas" class="tab-panel" role="tabpanel" aria-labelledby="tab-maletas">
             <h2>Plan de maletas</h2>
             <div class="card">
                 <table>
@@ -516,7 +734,7 @@
                 <p class="note"><strong>Servicio recomendado:</strong> Yamato Transport, TA-Q-BIN. Gestionarlo desde recepci&oacute;n y dejar al menos un d&iacute;a de margen.</p>
             </div>
         </section>
-        <section id="reservas">
+        <section id="reservas" class="tab-panel" role="tabpanel" aria-labelledby="tab-reservas">
             <h2>Reservas prioritarias</h2>
             <div class="card">
                 <ul class="checklist">
@@ -530,7 +748,7 @@
                 </ul>
             </div>
         </section>
-        <section id="presupuesto">
+        <section id="presupuesto" class="tab-panel" role="tabpanel" aria-labelledby="tab-presupuesto">
             <h2>Presupuesto orientativo</h2>
             <table>
                 <thead>
@@ -576,7 +794,7 @@
             </table>
             <p class="note">El objetivo de 3.000 &euro; por persona excluye vuelos y depende del precio real del ryokan, del hotel de Kioto y de la cena teppanyaki.</p>
         </section>
-        <section id="planesb">
+        <section id="planesb" class="tab-panel" role="tabpanel" aria-labelledby="tab-planesb">
             <h2>Planes B</h2>
             <div class="card">
                 <h3>Hakone</h3>
@@ -589,7 +807,7 @@
                 <p>Eliminar una visita secundaria antes que recortar descanso.</p>
             </div>
         </section>
-        <section id="grupo">
+        <section id="grupo" class="tab-panel" role="tabpanel" aria-labelledby="tab-grupo">
             <h2>Log&iacute;stica para un grupo de ocho</h2>
             <div class="card">
                 <h3>Habitaciones</h3>
@@ -618,7 +836,7 @@
                 </ul>
             </div>
         </section>
-        <section id="trucos">
+        <section id="trucos" class="tab-panel" role="tabpanel" aria-labelledby="tab-trucos">
             <h2>Trucos y recomendaciones</h2>
             <div class="card">
                 <h3>Equipaje</h3>
@@ -688,7 +906,139 @@
             </div>
         </section>
     </main>
-    <footer>Gu&iacute;a autocontenida &middot; Actualizada con vuelos, horarios y log&iacute;stica para 8 viajeros &middot; 14 de julio de 2026</footer>
+    <footer>Guía autocontenida · Actualizada con vuelos, horarios y logística para 8 viajeros · 14 de julio de 2026</footer>
+    <script>
+        let deferredPrompt;
+        const installButton = document.createElement('button');
+        installButton.type = 'button';
+        installButton.textContent = 'Instalar app';
+        installButton.style.cssText = 'position: fixed; right: 18px; bottom: 18px; background: var(--accent); color: white; border: none; border-radius: 999px; padding: 12px 18px; box-shadow: 0 16px 30px rgba(0,0,0,0.18); cursor: pointer; z-index: 30; display: none;';
+        document.body.appendChild(installButton);
+
+        window.addEventListener('beforeinstallprompt', event => {
+            event.preventDefault();
+            deferredPrompt = event;
+            installButton.style.display = 'block';
+        });
+
+        installButton.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const choiceResult = await deferredPrompt.userChoice;
+            if (choiceResult.outcome === 'accepted') {
+                console.log('App instalada');
+            }
+            deferredPrompt = null;
+            installButton.style.display = 'none';
+        });
+
+        window.addEventListener('appinstalled', () => {
+            installButton.style.display = 'none';
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupNavToggle();
+            setupTabs();
+            registerServiceWorker();
+        });
+
+        function setupNavToggle() {
+            const toggle = document.querySelector('.nav-toggle');
+            const links = document.querySelector('.nav-links');
+            if (!toggle || !links) return;
+
+            toggle.addEventListener('click', () => {
+                const isOpen = links.classList.toggle('open');
+                toggle.setAttribute('aria-expanded', isOpen.toString());
+                toggle.setAttribute('aria-label', isOpen ? 'Cerrar menú' : 'Abrir menú');
+            });
+
+            links.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (links.classList.contains('open')) {
+                        links.classList.remove('open');
+                        toggle.setAttribute('aria-expanded', 'false');
+                        toggle.setAttribute('aria-label', 'Abrir menú');
+                    }
+                });
+            });
+        }
+
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const sections = Array.from(document.querySelectorAll('main section.tab-panel'));
+            const navLinks = document.querySelectorAll('nav .nav-links a[href^="#"]');
+
+            function setActiveTab(targetId) {
+                tabs.forEach(tab => {
+                    const active = tab.dataset.target === targetId;
+                    tab.classList.toggle('active', active);
+                    tab.setAttribute('aria-selected', active.toString());
+                });
+                sections.forEach(section => {
+                    section.classList.toggle('active', section.id === targetId);
+                });
+            }
+
+            function navigateTo(targetId, updateHash = true) {
+                const section = document.getElementById(targetId);
+                if (!section) return;
+                const isTabPanel = section.classList.contains('tab-panel');
+                if (isTabPanel) {
+                    setActiveTab(targetId);
+                }
+                if (updateHash) {
+                    history.replaceState(null, '', `#${targetId}`);
+                }
+                window.scrollTo({ top: section.offsetTop - 120, behavior: 'smooth' });
+            }
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    navigateTo(tab.dataset.target);
+                });
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', event => {
+                    const targetId = link.getAttribute('href').substring(1);
+                    if (!targetId) return;
+                    event.preventDefault();
+                    navigateTo(targetId);
+                    if (document.querySelector('.nav-links.open')) {
+                        document.querySelector('.nav-links').classList.remove('open');
+                        document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false');
+                        document.querySelector('.nav-toggle').setAttribute('aria-label', 'Abrir menú');
+                    }
+                });
+            });
+
+            window.addEventListener('hashchange', () => {
+                const hash = window.location.hash.replace('#', '');
+                if (hash) {
+                    navigateTo(hash, false);
+                }
+            });
+
+            const initialHash = window.location.hash.replace('#', '');
+            const initialSection = document.getElementById(initialHash);
+            if (initialSection && initialSection.classList.contains('tab-panel')) {
+                setActiveTab(initialHash);
+            } else {
+                setActiveTab('resumen');
+            }
+            window.scrollTo(0, 0);
+        }
+
+        function registerServiceWorker() {
+            if (!('serviceWorker' in navigator)) return;
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(() => console.log('Service worker registrado.'))
+                    .catch(error => console.warn('Error al registrar service worker:', error));
+            });
+        }
+    </script>
 </body>
 
 </html>
