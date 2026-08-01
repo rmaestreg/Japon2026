@@ -244,6 +244,8 @@
         .fallback-places { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 12px; }
         .map-place { display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: 10px; background: #fffaf1; border: 1px solid var(--line); }
         .map-place small { color: var(--muted); }
+        .map-marker-label { background: rgba(255,255,255,.95); border: 1px solid var(--accent); border-radius: 6px; color: var(--ink); font-weight: 700; font-size: .75rem; padding: 3px 6px; box-shadow: 0 2px 8px rgba(0,0,0,.18); white-space: nowrap; }
+        .map-marker-label::before { border-top-color: var(--accent); }
         .secondary-action { border: 1px solid var(--accent); background: white; color: var(--accent); border-radius: 999px; padding: 8px 14px; font: inherit; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
         .secondary-action:hover, .secondary-action:focus-visible { background: #f8ebd8; }
         .brand-mark { max-width: 1080px; margin: 14px auto 0; padding: 0 20px; display: flex; align-items: center; gap: 10px; font-weight: 800; color: var(--ink); }
@@ -1062,6 +1064,9 @@
                 if (updateHash) {
                     history.replaceState(null, '', `#${targetId}`);
                 }
+                if (targetId === 'itinerario' && window.tripMap) {
+                    window.setTimeout(() => window.tripMap.invalidateSize({ animate: false }), 120);
+                }
                 const tabBar = document.querySelector('.tab-bar');
                 const offset = (tabBar ? tabBar.offsetHeight : 0) + 12;
                 window.scrollTo({ top: Math.max(0, section.getBoundingClientRect().top + window.scrollY - offset), behavior: 'smooth' });
@@ -1244,6 +1249,8 @@
                 const mapEl = document.getElementById('map');
                 if (!mapEl) return;
                 const map = L.map('map').setView([35.6895, 139.6917], 12);
+                window.tripMap = map;
+                window.addEventListener('resize', () => map.invalidateSize({ animate: false }));
                 // Use HOT tile server for prototyping to avoid tile usage referer blocks
                 const tileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
                 const tileLayer = L.tileLayer(tileUrl, {
@@ -1252,6 +1259,14 @@
                     maxZoom: 19,
                     crossOrigin: true
                 }).addTo(map);
+                const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: '&copy; Esri, Maxar, Earthstar Geographics y colaboradores',
+                    maxZoom: 19
+                });
+                L.control.layers({
+                    'Mapa de calles': tileLayer,
+                    'Vista satélite': satelliteLayer
+                }, null, { collapsed: false, position: 'topright' }).addTo(map);
                 let tileErrors = 0;
                 let fallbackLayer;
                 tileLayer.on('tileerror', () => {
@@ -1271,6 +1286,12 @@
                         const markers = [];
                         data.forEach(place => {
                             const marker = L.marker([place.lat, place.lng]).addTo(map);
+                            marker.bindTooltip(place.name, {
+                                permanent: true,
+                                direction: 'top',
+                                offset: [0, -8],
+                                className: 'map-marker-label'
+                            });
                             markers.push({ marker, place, days: PLACE_DAYS[place.id] || [] });
                             bounds.push([place.lat, place.lng]);
                             const content = `<strong>${place.name}</strong><div>${place.category}</div><div style="margin-top:8px;"><button type="button" data-id="${place.id}" class="add-itinerary">Añadir al itinerario</button></div>`;
