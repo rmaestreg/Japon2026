@@ -1,4 +1,4 @@
-const CACHE_NAME = 'japon2026-cache-v1';
+const CACHE_NAME = 'japon2026-cache-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -7,8 +7,7 @@ const ASSETS = [
   './offline.html',
   './sw.js',
   './data/places-sample.json',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+  './config.js'
 ];
 
 self.addEventListener('install', event => {

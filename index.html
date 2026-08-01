@@ -13,6 +13,7 @@
     <link rel="icon" href="icon.svg" sizes="64x64" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icon.svg">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="config.js"></script>
     <title>Guía Japón 2026</title>
     <style>
         :root {
@@ -231,6 +232,25 @@
             transform: scale(1.02);
         }
 
+        .tab:focus-visible, button:focus-visible, input:focus-visible {
+            outline: 3px solid var(--gold);
+            outline-offset: 3px;
+        }
+
+        .quick-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+        .quick-card { background: #fffaf1; border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+        .quick-card strong { display: block; font-size: 1.4rem; color: var(--accent); }
+        .inline-status { padding: 10px 14px; border-radius: 10px; background: #f0eade; color: var(--muted); }
+        .fallback-places { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 12px; }
+        .map-place { display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: 10px; background: #fffaf1; border: 1px solid var(--line); }
+        .map-place small { color: var(--muted); }
+        .checklist li { display: flex; gap: 10px; align-items: flex-start; padding-left: 0; }
+        .checklist li::before { display: none; }
+        .checklist input { flex: 0 0 auto; width: 1.2rem; height: 1.2rem; margin-top: 5px; accent-color: var(--accent); }
+        .checklist li.done label { text-decoration: line-through; color: var(--muted); }
+        .budget-input { width: 100%; max-width: 150px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+        .budget-total { font-weight: 800; color: var(--accent); }
+
         main section.tab-panel {
             display: none;
         }
@@ -404,6 +424,28 @@
                 padding: 12px 0;
             }
 
+            .tab-bar {
+                display: flex;
+                gap: 8px;
+                padding: 10px;
+                overflow-x: auto;
+                overflow-y: hidden;
+                justify-content: flex-start;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: auto;
+            }
+
+            .tab {
+                flex: 0 0 auto;
+                width: auto;
+                min-width: max-content;
+                white-space: nowrap;
+                min-height: 42px;
+                padding: 8px 6px;
+                line-height: 1.2;
+            }
+
             .timeline {
                 grid-template-columns: 1fr;
             }
@@ -469,6 +511,11 @@
                 <p><strong>Ruta final:</strong> Tokio &rarr; Hakone &rarr; Tokio &rarr; Kioto como base &rarr; Nara y Osaka &rarr; Hiroshima y Miyajima &rarr; Kurama y Kibune &rarr; Tokio.</p>
                 <p>Viaje a Kioto el <strong>29 de octubre por la tarde</strong>.&nbsp;</p>
                 <p>Huecos de Tokio: <strong>27 por la tarde, Ginza</strong>; <strong>28 por la ma&ntilde;ana, Asakusa y Ueno</strong>; <strong>29 por la tarde, shinkansen a Kioto</strong>.</p>
+                <div class="quick-grid" aria-label="Estado del viaje">
+                    <div class="quick-card"><strong id="pending-count">—</strong>Pendientes de reserva</div>
+                    <div class="quick-card"><strong id="packing-count">—</strong>Tareas de equipaje</div>
+                    <div class="quick-card"><strong id="budget-total">—</strong>Presupuesto estimado</div>
+                </div>
             </div>
         </section>
         <section id="itinerario" class="tab-panel" role="tabpanel" aria-labelledby="tab-itinerario">
@@ -763,13 +810,13 @@
             <h2>Reservas prioritarias</h2>
             <div class="card">
                 <ul class="checklist">
-                    <li>Ryokan de Hakone con onsen privado.</li>
-                    <li>Hotel de Kioto desde la noche del 29 de octubre.</li>
-                    <li>Shinkansen Tokio&ndash;Kioto del 29 por la tarde.</li>
-                    <li>Shinkansen Kioto&ndash;Tokio del 4 de noviembre.</li>
-                    <li>Trenes para Hiroshima y Miyajima.</li>
-                    <li>Cena teppanyaki del 27.</li>
-                    <li>Env&iacute;os de maletas entre hoteles.</li>
+                    <li><label>Ryokan de Hakone con onsen privado.</label></li>
+                    <li><label>Hotel de Kioto desde la noche del 29 de octubre.</label></li>
+                    <li><label>Shinkansen Tokio&ndash;Kioto del 29 por la tarde.</label></li>
+                    <li><label>Shinkansen Kioto&ndash;Tokio del 4 de noviembre.</label></li>
+                    <li><label>Trenes para Hiroshima y Miyajima.</label></li>
+                    <li><label>Cena teppanyaki del 27.</label></li>
+                    <li><label>Env&iacute;os de maletas entre hoteles.</label></li>
                 </ul>
             </div>
         </section>
@@ -962,47 +1009,28 @@
         });
 
         document.addEventListener('DOMContentLoaded', () => {
-            setupNavToggle();
             setupTabs();
+            setupPersistentChecklists();
+            setupBudget();
             registerServiceWorker();
             setupMap();
         });
 
-        function setupNavToggle() {
-            const toggle = document.querySelector('.nav-toggle');
-            const links = document.querySelector('.nav-links');
-            if (!toggle || !links) return;
-
-            toggle.addEventListener('click', () => {
-                const isOpen = links.classList.toggle('open');
-                toggle.setAttribute('aria-expanded', isOpen.toString());
-                toggle.setAttribute('aria-label', isOpen ? 'Cerrar menú' : 'Abrir menú');
-            });
-
-            links.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', () => {
-                    if (links.classList.contains('open')) {
-                        links.classList.remove('open');
-                        toggle.setAttribute('aria-expanded', 'false');
-                        toggle.setAttribute('aria-label', 'Abrir menú');
-                    }
-                });
-            });
-        }
-
         function setupTabs() {
             const tabs = document.querySelectorAll('.tab');
             const sections = Array.from(document.querySelectorAll('main section.tab-panel'));
-            const navLinks = document.querySelectorAll('nav .nav-links a[href^="#"]');
 
             function setActiveTab(targetId) {
                 tabs.forEach(tab => {
                     const active = tab.dataset.target === targetId;
                     tab.classList.toggle('active', active);
                     tab.setAttribute('aria-selected', active.toString());
+                    tab.tabIndex = active ? 0 : -1;
                 });
                 sections.forEach(section => {
-                    section.classList.toggle('active', section.id === targetId);
+                    const active = section.id === targetId;
+                    section.classList.toggle('active', active);
+                    section.setAttribute('aria-hidden', active ? 'false' : 'true');
                 });
             }
 
@@ -1016,26 +1044,21 @@
                 if (updateHash) {
                     history.replaceState(null, '', `#${targetId}`);
                 }
-                window.scrollTo({ top: section.offsetTop - 120, behavior: 'smooth' });
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
 
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
                     navigateTo(tab.dataset.target);
                 });
-            });
-
-            navLinks.forEach(link => {
-                link.addEventListener('click', event => {
-                    const targetId = link.getAttribute('href').substring(1);
-                    if (!targetId) return;
-                    event.preventDefault();
-                    navigateTo(targetId);
-                    if (document.querySelector('.nav-links.open')) {
-                        document.querySelector('.nav-links').classList.remove('open');
-                        document.querySelector('.nav-toggle').setAttribute('aria-expanded', 'false');
-                        document.querySelector('.nav-toggle').setAttribute('aria-label', 'Abrir menú');
-                    }
+                tab.addEventListener('keydown', event => {
+                    const index = Array.from(tabs).indexOf(tab);
+                    let next = index;
+                    if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+                    if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+                    if (event.key === 'Home') next = 0;
+                    if (event.key === 'End') next = tabs.length - 1;
+                    if (next !== index) { event.preventDefault(); tabs[next].focus(); navigateTo(tabs[next].dataset.target); }
                 });
             });
 
@@ -1056,6 +1079,41 @@
             window.scrollTo(0, 0);
         }
 
+        function setupPersistentChecklists() {
+            document.querySelectorAll('.checklist').forEach((list, listIndex) => {
+                list.querySelectorAll('li').forEach((item, itemIndex) => {
+                    const key = `japon2026-check-${listIndex}-${itemIndex}`;
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox'; checkbox.id = key; checkbox.checked = localStorage.getItem(key) === '1';
+                    const label = item.querySelector('label') || item;
+                    if (!label.htmlFor) label.htmlFor = key;
+                    item.prepend(checkbox); item.classList.toggle('done', checkbox.checked);
+                    checkbox.addEventListener('change', () => { localStorage.setItem(key, checkbox.checked ? '1' : '0'); item.classList.toggle('done', checkbox.checked); updateDashboard(); });
+                });
+            });
+            updateDashboard();
+        }
+
+        function setupBudget() {
+            const table = document.querySelector('#presupuesto table');
+            if (!table) return;
+            table.querySelectorAll('tbody tr').forEach((row, index) => {
+                if (index === table.querySelectorAll('tbody tr').length - 1) return;
+                const cell = row.cells[1]; const input = document.createElement('input'); input.className = 'budget-input'; input.type = 'number'; input.min = '0'; input.step = '10'; input.value = localStorage.getItem(`japon2026-budget-${index}`) || ''; input.placeholder = cell.textContent.trim(); cell.textContent = ''; cell.append(input);
+                input.addEventListener('input', () => { localStorage.setItem(`japon2026-budget-${index}`, input.value); updateDashboard(); });
+            });
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            const pending = document.querySelectorAll('#reservas .checklist input:not(:checked)').length;
+            const packing = document.querySelectorAll('#maletas .checklist input:not(:checked)').length;
+            const total = Array.from(document.querySelectorAll('.budget-input')).reduce((sum, input) => sum + (Number(input.value) || 0), 0);
+            const pendingEl = document.getElementById('pending-count'); if (pendingEl) pendingEl.textContent = pending;
+            const packingEl = document.getElementById('packing-count'); if (packingEl) packingEl.textContent = packing;
+            const budgetEl = document.getElementById('budget-total'); if (budgetEl) budgetEl.textContent = total ? `${total.toLocaleString('es-ES')} €` : '—';
+        }
+
         function registerServiceWorker() {
             if (!('serviceWorker' in navigator)) return;
             window.addEventListener('load', () => {
@@ -1066,12 +1124,47 @@
         }
 
         // Map setup using Leaflet and local sample data
+        const MAP_PLACES = [
+            {id: 1, name: 'Senso-ji (Asakusa)', label: 'Senso-ji (Asakusa)', lat: 35.7148, lng: 139.7967, category: 'Templo'},
+            {id: 2, name: 'Ueno Park', label: 'Ueno Park', lat: 35.7138, lng: 139.7745, category: 'Parque / Museo'},
+            {id: 3, name: 'Tsukiji Outer Market', label: 'Tsukiji Outer Market', lat: 35.6655, lng: 139.7708, category: 'Mercado / Comida'},
+            {id: 4, name: 'Meiji Jingu', label: 'Meiji Jingu', lat: 35.6764, lng: 139.6993, category: 'Santuario'},
+            {id: 5, name: 'Gion (Kioto)', label: 'Gion (Kioto)', lat: 35.0037, lng: 135.7788, category: 'Barrio tradicional'},
+            {id: 6, name: 'Kiyomizu-dera (Kioto)', label: 'Kiyomizu-dera (Kioto)', lat: 34.9949, lng: 135.7850, category: 'Templo'},
+            {id: 7, name: 'Fushimi Inari (Kioto)', label: 'Fushimi Inari (Kioto)', lat: 34.9671, lng: 135.7727, category: 'Santuario'},
+            {id: 8, name: 'Arashiyama Bamboo Grove', label: 'Arashiyama Bamboo Grove', lat: 35.0094, lng: 135.6670, category: 'Atracción'},
+            {id: 9, name: 'Aeropuerto de Narita', label: 'Llegada y salida', lat: 35.7720, lng: 140.3929, category: 'Aeropuerto'},
+            {id: 10, name: 'Shiodome', label: 'Royal Park Hotel', lat: 35.6640, lng: 139.7590, category: 'Hotel'},
+            {id: 11, name: 'Gōra', label: 'Hakone', lat: 35.2508, lng: 139.0480, category: 'Hakone'},
+            {id: 12, name: 'Ōwakudani', label: 'Hakone', lat: 35.2431, lng: 139.0196, category: 'Hakone'},
+            {id: 13, name: 'Lago Ashi', label: 'Hakone', lat: 35.2058, lng: 139.0256, category: 'Hakone'},
+            {id: 14, name: 'Hakone-jinja', label: 'Santuario de Hakone', lat: 35.2030, lng: 139.0250, category: 'Santuario'},
+            {id: 15, name: 'Ginza', label: 'Paseo y cena', lat: 35.6717, lng: 139.7650, category: 'Barrio'},
+            {id: 16, name: 'Estación de Kioto', label: 'Base de Kioto', lat: 34.9858, lng: 135.7588, category: 'Transporte'},
+            {id: 17, name: 'Parque de Nara', label: 'Nara', lat: 34.6851, lng: 135.8430, category: 'Excursión'},
+            {id: 18, name: 'Dōtonbori', label: 'Osaka', lat: 34.6687, lng: 135.5013, category: 'Barrio / Comida'},
+            {id: 19, name: 'Parque Memorial de la Paz', label: 'Hiroshima', lat: 34.3955, lng: 132.4536, category: 'Historia'},
+            {id: 20, name: 'Santuario Itsukushima', label: 'Miyajima', lat: 34.2960, lng: 132.3197, category: 'Santuario'},
+            {id: 21, name: 'Kurama-dera', label: 'Kurama', lat: 35.1160, lng: 135.7727, category: 'Templo'},
+            {id: 22, name: 'Kibune-jinja', label: 'Kibune', lat: 35.1231, lng: 135.7628, category: 'Santuario'},
+            {id: 23, name: 'Byōdō-in', label: 'Plan B: Uji', lat: 34.8894, lng: 135.8077, category: 'Plan alternativo'}
+        ];
+        const MAPTILER_KEY = window.MAPTILER_KEY || '';
+
         function setupMap() {
+            function showMapFallback(message) {
+                const mapEl = document.getElementById('map');
+                if (!mapEl) return;
+                mapEl.innerHTML = `<div class="inline-status" role="status">${message}</div><div class="fallback-places">${MAP_PLACES.map(place => `<span class="map-place"><strong>${place.name}</strong><small>${place.label} · ${place.category}</small></span>`).join('')}</div>`;
+                mapEl.style.height = 'auto'; mapEl.style.minHeight = '180px'; mapEl.style.padding = '16px';
+            }
+
             // load Leaflet script dynamically
             if (typeof L === 'undefined') {
                 const s = document.createElement('script');
                 s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
                 s.onload = initLeaflet;
+                s.onerror = () => showMapFallback('El mapa no está disponible sin conexión. Consulta el itinerario local más abajo.');
                 document.head.appendChild(s);
             } else {
                 initLeaflet();
@@ -1082,19 +1175,31 @@
                 if (!mapEl) return;
                 const map = L.map('map').setView([35.6895, 139.6917], 12);
                 // Use HOT tile server for prototyping to avoid tile usage referer blocks
-                L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap contributors &amp; Humanitarian OpenStreetMap Team',
-                    maxZoom: 19
+                const tileUrl = MAPTILER_KEY
+                    ? `https://api.maptiler.com/maps/streets-v4/256/{z}/{x}/{y}.png?key=${MAPTILER_KEY}&language=es`
+                    : 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png';
+                const tileLayer = L.tileLayer(tileUrl, {
+                    attribution: '&copy; MapTiler &amp; OpenStreetMap contributors',
+                    minZoom: 1,
+                    maxZoom: 19,
+                    crossOrigin: true
                 }).addTo(map);
+                let tileErrors = 0;
+                tileLayer.on('tileerror', () => {
+                    tileErrors += 1;
+                    if (tileErrors >= 3) showMapFallback('No se pudo cargar el mapa base. Los lugares siguen disponibles en la lista.');
+                });
 
-                fetch('data/places-sample.json')
-                    .then(r => r.json())
+                Promise.resolve(MAP_PLACES)
                     .then(data => {
+                        const bounds = [];
                         data.forEach(place => {
                             const marker = L.marker([place.lat, place.lng]).addTo(map);
+                            bounds.push([place.lat, place.lng]);
                             const content = `<strong>${place.name}</strong><div>${place.category}</div><div style="margin-top:8px;"><button data-id="${place.id}" class="add-itinerary">Añadir al itinerario</button></div>`;
                             marker.bindPopup(content);
                         });
+                        if (bounds.length) map.fitBounds(bounds, { padding: [24, 24], maxZoom: 10 });
 
                         map.on('popupopen', e => {
                             const btn = e.popup._contentNode.querySelector('.add-itinerary');
@@ -1103,10 +1208,10 @@
 
                         renderItinerary();
                     })
-                    .catch(err => console.warn('No se pudieron cargar los datos del mapa:', err));
+                    .catch(err => { console.warn('No se pudieron cargar los datos del mapa:', err); showMapFallback('No se pudieron cargar los lugares guardados.'); });
 
                 function addToItinerary(id) {
-                    fetch('data/places-sample.json').then(r => r.json()).then(data => {
+                    Promise.resolve(MAP_PLACES).then(data => {
                         const place = data.find(p => String(p.id) === String(id));
                         if (!place) return;
                         const it = JSON.parse(localStorage.getItem('itinerary') || '[]');
