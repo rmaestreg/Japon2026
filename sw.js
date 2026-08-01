@@ -5,6 +5,8 @@ const ASSETS = [
   './manifest.json',
   './icon.svg',
   './icon-ios-japan.png',
+  './icon-192.png',
+  './icon-512.png',
   './offline.html',
   './sw.js',
   './data/places-sample.json',

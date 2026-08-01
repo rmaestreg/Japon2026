@@ -10,8 +10,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Guía Japón 2026">
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="icon.svg" sizes="64x64" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="icon-ios-japan.png">
+    <link rel="icon" href="icon-ios-japan.png" sizes="192x192" type="image/png">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="config.js"></script>
     <title>Guía Japón 2026</title>
@@ -455,6 +455,10 @@
                 grid-template-columns: 1fr;
             }
 
+            section.tab-panel { overflow-x: hidden; }
+            section.tab-panel table { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            section.tab-panel th, section.tab-panel td { min-width: 120px; }
+
             .time {
                 margin-top: 8px;
             }
@@ -486,13 +490,11 @@
 <body>
     <header><!-- Contenido del header eliminado por petición del usuario --></header>
     <!-- Sección <nav> eliminada por petición del usuario -->
-    <div class="brand-mark"><img src="icon-ios-japan.png" alt="" width="42" height="42"><span>Guía Japón 2026</span></div>
     <div class="tab-bar" role="tablist" aria-label="Secciones principales">
         <button id="tab-resumen" class="tab active" role="tab" aria-selected="true" aria-controls="resumen" data-target="resumen">Resumen</button>
         <button id="tab-itinerario" class="tab" role="tab" aria-selected="false" aria-controls="itinerario" data-target="itinerario">Itinerario</button>
         <button id="tab-hoteles" class="tab" role="tab" aria-selected="false" aria-controls="hoteles" data-target="hoteles">Hoteles</button>
         <button id="tab-maletas" class="tab" role="tab" aria-selected="false" aria-controls="maletas" data-target="maletas">Maletas</button>
-        <button id="tab-reservas" class="tab" role="tab" aria-selected="false" aria-controls="reservas" data-target="reservas">Reservas</button>
         <button id="tab-presupuesto" class="tab" role="tab" aria-selected="false" aria-controls="presupuesto" data-target="presupuesto">Presupuesto</button>
         <button id="tab-grupo" class="tab" role="tab" aria-selected="false" aria-controls="grupo" data-target="grupo">Grupo</button>
         <button id="tab-trucos" class="tab" role="tab" aria-selected="false" aria-controls="trucos" data-target="trucos">Consejos</button>
@@ -510,7 +512,7 @@
                 <div id="map-itinerary">
                     <h3>Itinerario local</h3>
                     <button id="clear-itinerary" type="button" class="secondary-action">Borrar itinerario local</button>
-                    <ul id="itinerary-list"></ul>
+                    <ul id="itinerary-list" aria-live="polite" aria-label="Lugares guardados en el itinerario"></ul>
                 </div>
             </div>
         </section>
@@ -523,9 +525,20 @@
                 <p>Viaje a Kioto el <strong>29 de octubre por la tarde</strong>.&nbsp;</p>
                 <p>Huecos de Tokio: <strong>27 por la tarde, Ginza</strong>; <strong>28 por la ma&ntilde;ana, Asakusa y Ueno</strong>; <strong>29 por la tarde, shinkansen a Kioto</strong>.</p>
                 <div class="quick-grid" aria-label="Estado del viaje">
-                    <div class="quick-card"><strong id="pending-count">—</strong>Pendientes de reserva</div>
                     <div class="quick-card"><strong id="packing-count">—</strong>Tareas de equipaje</div>
                     <div class="quick-card"><strong id="budget-total">—</strong>Presupuesto estimado</div>
+                </div>
+                <div class="card">
+                    <h3>Reservas prioritarias</h3>
+                    <ul class="checklist">
+                        <li><label>Ryokan de Hakone con onsen privado.</label></li>
+                        <li><label>Hotel de Kioto desde la noche del 29 de octubre.</label></li>
+                        <li><label>Shinkansen Tokio&ndash;Kioto del 29 por la tarde.</label></li>
+                        <li><label>Shinkansen Kioto&ndash;Tokio del 4 de noviembre.</label></li>
+                        <li><label>Trenes para Hiroshima y Miyajima.</label></li>
+                        <li><label>Cena teppanyaki del 27.</label></li>
+                        <li><label>Env&iacute;os de maletas entre hoteles.</label></li>
+                    </ul>
                 </div>
             </div>
         </section>
@@ -817,20 +830,6 @@
                 <p class="note"><strong>Servicio recomendado:</strong> Yamato Transport, TA-Q-BIN. Gestionarlo desde recepci&oacute;n y dejar al menos un d&iacute;a de margen.</p>
             </div>
         </section>
-        <section id="reservas" class="tab-panel" role="tabpanel" aria-labelledby="tab-reservas">
-            <h2>Reservas prioritarias</h2>
-            <div class="card">
-                <ul class="checklist">
-                    <li><label>Ryokan de Hakone con onsen privado.</label></li>
-                    <li><label>Hotel de Kioto desde la noche del 29 de octubre.</label></li>
-                    <li><label>Shinkansen Tokio&ndash;Kioto del 29 por la tarde.</label></li>
-                    <li><label>Shinkansen Kioto&ndash;Tokio del 4 de noviembre.</label></li>
-                    <li><label>Trenes para Hiroshima y Miyajima.</label></li>
-                    <li><label>Cena teppanyaki del 27.</label></li>
-                    <li><label>Env&iacute;os de maletas entre hoteles.</label></li>
-                </ul>
-            </div>
-        </section>
         <section id="presupuesto" class="tab-panel" role="tabpanel" aria-labelledby="tab-presupuesto">
             <h2>Presupuesto orientativo</h2>
             <table>
@@ -1020,6 +1019,7 @@
         });
 
         document.addEventListener('DOMContentLoaded', () => {
+            moveSummaryOnlySections();
             setupTabs();
             setupPersistentChecklists();
             setupBudget();
@@ -1057,7 +1057,9 @@
                 if (updateHash) {
                     history.replaceState(null, '', `#${targetId}`);
                 }
-                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const tabBar = document.querySelector('.tab-bar');
+                const offset = (tabBar ? tabBar.offsetHeight : 0) + 12;
+                window.scrollTo({ top: Math.max(0, section.getBoundingClientRect().top + window.scrollY - offset), behavior: 'smooth' });
             }
 
             tabs.forEach(tab => {
@@ -1119,10 +1121,8 @@
         }
 
         function updateDashboard() {
-            const pending = document.querySelectorAll('#reservas .checklist input:not(:checked)').length;
             const packing = document.querySelectorAll('#maletas .checklist input:not(:checked)').length;
             const total = Array.from(document.querySelectorAll('.budget-input')).reduce((sum, input) => sum + (Number(input.value) || 0), 0);
-            const pendingEl = document.getElementById('pending-count'); if (pendingEl) pendingEl.textContent = pending;
             const packingEl = document.getElementById('packing-count'); if (packingEl) packingEl.textContent = packing;
             const budgetEl = document.getElementById('budget-total'); if (budgetEl) budgetEl.textContent = total ? `${total.toLocaleString('es-ES')} €` : '—';
         }
@@ -1144,6 +1144,15 @@
             const map = document.getElementById('mapa');
             const itinerary = document.getElementById('itinerario');
             if (map && itinerary) itinerary.prepend(map);
+        }
+
+        function moveSummaryOnlySections() {
+            const summary = document.getElementById('resumen');
+            if (!summary) return;
+            Array.from(document.querySelectorAll('#main-content > section')).forEach(section => {
+                const title = section.querySelector('h2')?.textContent.trim();
+                if (title === 'Decisiones todavía pendientes' || title === 'Referencias operativas') summary.appendChild(section);
+            });
         }
 
         function registerServiceWorker() {
@@ -1254,7 +1263,7 @@
                             const marker = L.marker([place.lat, place.lng]).addTo(map);
                             markers.push({ marker, place, days: PLACE_DAYS[place.id] || [] });
                             bounds.push([place.lat, place.lng]);
-                            const content = `<strong>${place.name}</strong><div>${place.category}</div><div style="margin-top:8px;"><button data-id="${place.id}" class="add-itinerary">Añadir al itinerario</button></div>`;
+                            const content = `<strong>${place.name}</strong><div>${place.category}</div><div style="margin-top:8px;"><button type="button" data-id="${place.id}" class="add-itinerary">Añadir al itinerario</button></div>`;
                             marker.bindPopup(content);
                         });
                         if (bounds.length) map.fitBounds(bounds, { padding: [24, 24], maxZoom: 10 });
