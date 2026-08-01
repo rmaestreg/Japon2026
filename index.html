@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-title" content="Guía Japón 2026">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="icon.svg" sizes="64x64" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon-ios-japan.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="config.js"></script>
     <title>Guía Japón 2026</title>
@@ -246,6 +246,9 @@
         .map-place small { color: var(--muted); }
         .secondary-action { border: 1px solid var(--accent); background: white; color: var(--accent); border-radius: 999px; padding: 8px 14px; font: inherit; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
         .secondary-action:hover, .secondary-action:focus-visible { background: #f8ebd8; }
+        .brand-mark { max-width: 1080px; margin: 14px auto 0; padding: 0 20px; display: flex; align-items: center; gap: 10px; font-weight: 800; color: var(--ink); }
+        .brand-mark img { width: 42px; height: 42px; border-radius: 12px; box-shadow: 0 5px 14px rgba(32,38,49,.18); }
+        @media(max-width:768px) { .brand-mark { padding: 0 12px; } }
         .checklist li { display: flex; gap: 10px; align-items: flex-start; padding-left: 0; }
         .checklist li::before { display: none; }
         .checklist input { flex: 0 0 auto; width: 1.2rem; height: 1.2rem; margin-top: 5px; accent-color: var(--accent); }
@@ -483,6 +486,7 @@
 <body>
     <header><!-- Contenido del header eliminado por petición del usuario --></header>
     <!-- Sección <nav> eliminada por petición del usuario -->
+    <div class="brand-mark"><img src="icon-ios-japan.png" alt="" width="42" height="42"><span>Guía Japón 2026</span></div>
     <div class="tab-bar" role="tablist" aria-label="Secciones principales">
         <button id="tab-resumen" class="tab active" role="tab" aria-selected="true" aria-controls="resumen" data-target="resumen">Resumen</button>
         <button id="tab-itinerario" class="tab" role="tab" aria-selected="false" aria-controls="itinerario" data-target="itinerario">Itinerario</button>
@@ -491,13 +495,17 @@
         <button id="tab-reservas" class="tab" role="tab" aria-selected="false" aria-controls="reservas" data-target="reservas">Reservas</button>
         <button id="tab-presupuesto" class="tab" role="tab" aria-selected="false" aria-controls="presupuesto" data-target="presupuesto">Presupuesto</button>
         <button id="tab-grupo" class="tab" role="tab" aria-selected="false" aria-controls="grupo" data-target="grupo">Grupo</button>
-        <button id="tab-trucos" class="tab" role="tab" aria-selected="false" aria-controls="trucos" data-target="trucos">Trucos</button>
+        <button id="tab-trucos" class="tab" role="tab" aria-selected="false" aria-controls="trucos" data-target="trucos">Consejos</button>
         <button id="tab-planesb" class="tab" role="tab" aria-selected="false" aria-controls="planesb" data-target="planesb">Planes B</button>
     </div>
     <main id="main-map">
-        <section id="mapa" role="region" aria-label="Mapa de sugerencias">
-            <h2>Mapa de sugerencias</h2>
+        <section id="mapa" role="region" aria-label="Mapa del itinerario">
+            <h2>Mapa del itinerario</h2>
             <div class="card">
+                <label for="map-day"><strong>Mostrar día en el mapa</strong></label>
+                <select id="map-day" class="budget-input" style="margin:8px 0 14px; max-width:280px;">
+                    <option value="all">Todo el viaje</option>
+                </select>
                 <div id="map"></div>
                 <div id="map-itinerary">
                     <h3>Itinerario local</h3>
@@ -912,7 +920,7 @@
             </div>
         </section>
         <section id="trucos" class="tab-panel" role="tabpanel" aria-labelledby="tab-trucos">
-            <h2>Trucos y recomendaciones</h2>
+            <h2>Consejos</h2>
             <div class="card">
                 <h3>Equipaje</h3>
                 <ul>
@@ -1016,6 +1024,7 @@
             setupPersistentChecklists();
             setupBudget();
             registerServiceWorker();
+            moveMapToItinerary();
             setupMap();
             setupItineraryControls();
         });
@@ -1131,6 +1140,12 @@
             });
         }
 
+        function moveMapToItinerary() {
+            const map = document.getElementById('mapa');
+            const itinerary = document.getElementById('itinerario');
+            if (map && itinerary) itinerary.prepend(map);
+        }
+
         function registerServiceWorker() {
             if (!('serviceWorker' in navigator)) return;
             window.addEventListener('load', () => {
@@ -1164,9 +1179,33 @@
             {id: 20, name: 'Santuario Itsukushima', label: 'Miyajima', lat: 34.2960, lng: 132.3197, category: 'Santuario'},
             {id: 21, name: 'Kurama-dera', label: 'Kurama', lat: 35.1160, lng: 135.7727, category: 'Templo'},
             {id: 22, name: 'Kibune-jinja', label: 'Kibune', lat: 35.1231, lng: 135.7628, category: 'Santuario'},
-            {id: 23, name: 'Byōdō-in', label: 'Plan B: Uji', lat: 34.8894, lng: 135.8077, category: 'Plan alternativo'}
+            {id: 23, name: 'Byōdō-in', label: 'Plan B: Uji', lat: 34.8894, lng: 135.8077, category: 'Plan alternativo'},
+            {id: 24, name: 'Aeropuerto de Haneda', label: 'Vuelo de regreso', lat: 35.5494, lng: 139.7798, category: 'Aeropuerto'},
+            {id: 25, name: 'Nakamise', label: 'Asakusa', lat: 35.7125, lng: 139.7967, category: 'Calle comercial'},
+            {id: 26, name: 'Río Sumida', label: 'Asakusa', lat: 35.7138, lng: 139.8032, category: 'Paseo'},
+            {id: 27, name: 'Sannenzaka y Ninenzaka', label: 'Higashiyama', lat: 34.9972, lng: 135.7800, category: 'Barrio histórico'},
+            {id: 28, name: 'Yasaka Pagoda', label: 'Higashiyama', lat: 34.9971, lng: 135.7788, category: 'Monumento'},
+            {id: 29, name: 'Yasaka-jinja', label: 'Gion', lat: 35.0036, lng: 135.7785, category: 'Santuario'},
+            {id: 30, name: 'Parque Maruyama', label: 'Gion', lat: 35.0039, lng: 135.7820, category: 'Parque'},
+            {id: 31, name: 'Shirakawa', label: 'Gion', lat: 35.0070, lng: 135.7750, category: 'Canal histórico'},
+            {id: 32, name: 'Ponto-chō', label: 'Kioto', lat: 35.0050, lng: 135.7700, category: 'Barrio / Restaurantes'},
+            {id: 33, name: 'Tenryū-ji', label: 'Arashiyama', lat: 35.0150, lng: 135.6740, category: 'Templo'},
+            {id: 34, name: 'Puente Togetsukyō', label: 'Arashiyama', lat: 35.0094, lng: 135.6678, category: 'Puente'},
+            {id: 35, name: 'Kinkaku-ji', label: 'Kioto oeste', lat: 35.0394, lng: 135.7292, category: 'Templo'},
+            {id: 36, name: 'Castillo Nijō', label: 'Kioto', lat: 35.0142, lng: 135.7480, category: 'Castillo'},
+            {id: 37, name: 'Mercado Nishiki', label: 'Kioto', lat: 35.0050, lng: 135.7648, category: 'Mercado'},
+            {id: 38, name: 'Tōdai-ji', label: 'Nara', lat: 34.6888, lng: 135.8398, category: 'Templo'},
+            {id: 39, name: 'Nigatsu-dō', label: 'Nara', lat: 34.6891, lng: 135.8450, category: 'Templo'},
+            {id: 40, name: 'Kasuga Taisha', label: 'Nara', lat: 34.6814, lng: 135.8482, category: 'Santuario'},
+            {id: 41, name: 'Namba', label: 'Osaka', lat: 34.6659, lng: 135.5013, category: 'Barrio'},
+            {id: 42, name: 'Museo Memorial de la Paz', label: 'Hiroshima', lat: 34.3928, lng: 132.4528, category: 'Museo'},
+            {id: 43, name: 'Meiji-jingū', label: 'Tokio', lat: 35.6764, lng: 139.6993, category: 'Santuario'},
+            {id: 44, name: 'Omotesandō', label: 'Tokio', lat: 35.6652, lng: 139.7123, category: 'Avenida / Compras'},
+            {id: 45, name: 'Marunouchi', label: 'Tokio', lat: 35.6814, lng: 139.7646, category: 'Barrio / Compras'},
+            {id: 46, name: 'Tokyo Station', label: 'Tokio', lat: 35.6812, lng: 139.7671, category: 'Transporte'}
         ];
         const MAPTILER_KEY = window.MAPTILER_KEY || '';
+        const PLACE_DAYS = {1:['28'], 2:['28'], 3:['27'], 4:['30'], 5:['30','31'], 6:['30'], 7:['30'], 8:['31'], 9:['24'], 10:['24','27','28','29','4'], 11:['25','26'], 12:['26'], 13:['26'], 14:['26'], 15:['27'], 16:['29','30','31','1','2','3','4'], 17:['1'], 18:['2'], 19:['3'], 20:['3'], 21:['2'], 22:['2'], 23:['2'], 24:['5'], 25:['25','28'], 26:['25'], 27:['30'], 28:['30'], 29:['30'], 30:['30'], 31:['30'], 32:['30'], 33:['31'], 34:['31'], 35:['31'], 36:['31'], 37:['31'], 38:['1'], 39:['1'], 40:['1'], 41:['1'], 42:['2'], 43:['5'], 44:['5'], 45:['4'], 46:['29','4'] };
 
         function setupMap() {
             function showMapFallback(message) {
@@ -1210,13 +1249,16 @@
                 Promise.resolve(MAP_PLACES)
                     .then(data => {
                         const bounds = [];
+                        const markers = [];
                         data.forEach(place => {
                             const marker = L.marker([place.lat, place.lng]).addTo(map);
+                            markers.push({ marker, place, days: PLACE_DAYS[place.id] || [] });
                             bounds.push([place.lat, place.lng]);
                             const content = `<strong>${place.name}</strong><div>${place.category}</div><div style="margin-top:8px;"><button data-id="${place.id}" class="add-itinerary">Añadir al itinerario</button></div>`;
                             marker.bindPopup(content);
                         });
                         if (bounds.length) map.fitBounds(bounds, { padding: [24, 24], maxZoom: 10 });
+                        setupMapDayFilter(markers, map);
 
                         map.on('popupopen', e => {
                             const btn = e.popup._contentNode.querySelector('.add-itinerary');
@@ -1246,6 +1288,27 @@
                     ul.innerHTML = it.map(p => `<li>${p.name} — <small>${p.category}</small></li>`).join('') || '<li>(vacío)</li>';
                 }
             }
+        }
+
+        function setupMapDayFilter(markers, map) {
+            const select = document.getElementById('map-day');
+            if (!select) return;
+            let routeLines = [];
+            ['24','25','26','27','28','29','30','31','1','2','3','4','5'].forEach(day => {
+                const option = document.createElement('option'); option.value = day; option.textContent = `Día ${day}`; select.appendChild(option);
+            });
+            select.addEventListener('change', () => {
+                const selected = select.value;
+                const visible = markers.filter(item => selected === 'all' || item.days.includes(selected));
+                markers.forEach(item => { if (selected === 'all' || item.days.includes(selected)) item.marker.addTo(map); else map.removeLayer(item.marker); });
+                routeLines.forEach(line => map.removeLayer(line));
+                routeLines = [];
+                if (selected !== 'all') {
+                    const points = visible.map(item => item.marker.getLatLng());
+                    if (points.length > 1) routeLines.push(L.polyline(points, { color: '#8f2727', weight: 5, opacity: 0.8, dashArray: '10 8' }).addTo(map));
+                }
+                if (visible.length) map.fitBounds(visible.map(item => item.marker.getLatLng()), { padding: [24,24], maxZoom: 14 });
+            });
         }
     </script>
 </body>
