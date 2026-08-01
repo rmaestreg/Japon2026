@@ -244,6 +244,8 @@
         .fallback-places { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 12px; }
         .map-place { display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: 10px; background: #fffaf1; border: 1px solid var(--line); }
         .map-place small { color: var(--muted); }
+        .secondary-action { border: 1px solid var(--accent); background: white; color: var(--accent); border-radius: 999px; padding: 8px 14px; font: inherit; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
+        .secondary-action:hover, .secondary-action:focus-visible { background: #f8ebd8; }
         .checklist li { display: flex; gap: 10px; align-items: flex-start; padding-left: 0; }
         .checklist li::before { display: none; }
         .checklist input { flex: 0 0 auto; width: 1.2rem; height: 1.2rem; margin-top: 5px; accent-color: var(--accent); }
@@ -499,6 +501,7 @@
                 <div id="map"></div>
                 <div id="map-itinerary">
                     <h3>Itinerario local</h3>
+                    <button id="clear-itinerary" type="button" class="secondary-action">Borrar itinerario local</button>
                     <ul id="itinerary-list"></ul>
                 </div>
             </div>
@@ -1014,6 +1017,7 @@
             setupBudget();
             registerServiceWorker();
             setupMap();
+            setupItineraryControls();
         });
 
         function setupTabs() {
@@ -1112,6 +1116,19 @@
             const pendingEl = document.getElementById('pending-count'); if (pendingEl) pendingEl.textContent = pending;
             const packingEl = document.getElementById('packing-count'); if (packingEl) packingEl.textContent = packing;
             const budgetEl = document.getElementById('budget-total'); if (budgetEl) budgetEl.textContent = total ? `${total.toLocaleString('es-ES')} €` : '—';
+        }
+
+        function setupItineraryControls() {
+            const button = document.getElementById('clear-itinerary');
+            if (!button) return;
+            button.addEventListener('click', () => {
+                const current = JSON.parse(localStorage.getItem('itinerary') || '[]');
+                if (!current.length) return;
+                if (!confirm('¿Borrar todos los lugares del itinerario local?')) return;
+                localStorage.removeItem('itinerary');
+                const list = document.getElementById('itinerary-list');
+                if (list) list.innerHTML = '<li>(vacío)</li>';
+            });
         }
 
         function registerServiceWorker() {
