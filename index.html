@@ -232,6 +232,43 @@
             transform: scale(1.02);
         }
 
+        .vocab-toolbar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .vocab-search {
+            flex: 1 1 260px;
+            min-width: 0;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 12px 16px;
+            font: inherit;
+            background: white;
+            color: var(--ink);
+        }
+
+        .vocab-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 14px;
+        }
+
+        .vocab-card {
+            padding: 16px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: rgba(255,255,255,.75);
+        }
+
+        .vocab-card dt { font-weight: 800; color: var(--accent); }
+        .vocab-card dd { margin: 2px 0 0; font-size: 1.05rem; }
+        .vocab-kanji { font-size: 1.65rem; margin-right: 8px; color: var(--ink); }
+        .vocab-empty { color: var(--muted); text-align: center; padding: 18px; }
+
         .tab:focus-visible, button:focus-visible, input:focus-visible {
             outline: 3px solid var(--gold);
             outline-offset: 3px;
@@ -505,6 +542,7 @@
         <button id="tab-presupuesto" class="tab" role="tab" aria-selected="false" aria-controls="presupuesto" data-target="presupuesto">Presupuesto</button>
         <button id="tab-grupo" class="tab" role="tab" aria-selected="false" aria-controls="grupo" data-target="grupo">Grupo</button>
         <button id="tab-trucos" class="tab" role="tab" aria-selected="false" aria-controls="trucos" data-target="trucos">Consejos</button>
+        <button id="tab-vocabulario" class="tab" role="tab" aria-selected="false" aria-controls="vocabulario" data-target="vocabulario">Japonés útil</button>
         <button id="tab-planesb" class="tab" role="tab" aria-selected="false" aria-controls="planesb" data-target="planesb">Planes B</button>
     </div>
     <main id="main-map">
@@ -971,6 +1009,31 @@
                 </ul>
             </div>
         </section>
+        <section id="vocabulario" class="tab-panel" role="tabpanel" aria-labelledby="tab-vocabulario">
+            <h2>Japonés útil para el viaje</h2>
+            <div class="card">
+                <p>Una pequeña chuleta con palabras y frases para moverte por Japón. Puedes buscar en español, japonés o romaji.</p>
+                <div class="vocab-toolbar">
+                    <input id="vocab-search" class="vocab-search" type="search" placeholder="Buscar: gracias, estación, arigato…" aria-label="Buscar vocabulario">
+                    <span id="vocab-count" class="muted" aria-live="polite"></span>
+                </div>
+                <div id="vocab-grid" class="vocab-grid"></div>
+                <p id="vocab-empty" class="vocab-empty" hidden>No hay resultados. Prueba con otra palabra.</p>
+                <hr>
+                <h3>Kanji que encontrarás a menudo</h3>
+                <div class="vocab-grid">
+                    <div class="vocab-card"><span class="vocab-kanji">出口</span><strong>deguchi</strong><br>Salida</div>
+                    <div class="vocab-card"><span class="vocab-kanji">入口</span><strong>iriguchi</strong><br>Entrada</div>
+                    <div class="vocab-card"><span class="vocab-kanji">東 西</span><strong>higashi / nishi</strong><br>Este / oeste</div>
+                    <div class="vocab-card"><span class="vocab-kanji">北 南</span><strong>kita / minami</strong><br>Norte / sur</div>
+                    <div class="vocab-card"><span class="vocab-kanji">押す</span><strong>osu</strong><br>Empujar</div>
+                    <div class="vocab-card"><span class="vocab-kanji">引く</span><strong>hiku</strong><br>Tirar</div>
+                    <div class="vocab-card"><span class="vocab-kanji">禁煙</span><strong>kin-en</strong><br>Prohibido fumar</div>
+                    <div class="vocab-card"><span class="vocab-kanji">立入禁止</span><strong>tachiiri kinshi</strong><br>Prohibido entrar</div>
+                </div>
+                <p class="muted">Fuente y ampliación: <a href="https://japonia.es/travel/japones" target="_blank" rel="noopener">Un poco de japonés — Japonia</a>.</p>
+            </div>
+        </section>
         <section>
             <h2>Decisiones todav&iacute;a pendientes</h2>
             <div class="card">
@@ -1029,6 +1092,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             moveSummaryOnlySections();
             setupTabs();
+            setupVocabulary();
             setupPersistentChecklists();
             setupBudget();
             registerServiceWorker();
@@ -1036,6 +1100,39 @@
             setupMap();
             setupItineraryControls();
         });
+
+        function setupVocabulary() {
+            const entries = [
+                ['Buenos días', 'Ohayoo (gozaimasu)'], ['Buenas tardes / Hola', 'Konnichiwa'],
+                ['Buenas noches', 'Konbanwa'], ['Buenas noches (al acostarse)', 'Oyasumi nasai'],
+                ['Adiós', 'Sayoonara'], ['Gracias', 'Arigatoo'], ['De nada', 'Doo itashimashite'],
+                ['Lo siento', 'Gomennasai'], ['Perdón', 'Sumimasen'], ['Sí / No', 'Hai / Iie'],
+                ['¿Entiende?', 'Wakarimasuka?'], ['Sí, entiendo', 'Wakarimasu'], ['No entiendo', 'Wakarimasen'],
+                ['Otra vez, por favor', 'Moo ichido (onegai shimasu)'], ['Más despacio, por favor', 'Yukkuri (onegai shimasu)'],
+                ['Un momento, por favor', 'Chotto matte (kudasai)'], ['Tengo reserva a nombre de…', 'Yoyakushita … desu'],
+                ['Arriba / Abajo', 'ue / shita'], ['Derecha / Izquierda', 'migi / hidari'],
+                ['Caro / Barato', 'takai / yasui'], ['Esto / Eso / Aquello', 'kore / sore / are'],
+                ['Aquí / Ahí / Allí', 'koko / soko / asoko'], ['¿Qué es?', 'Nani? / Nan desu ka?'],
+                ['¿Dónde?', 'Doko?'], ['¿Cuándo?', 'Itsu?'], ['¿A qué hora?', 'Nanji ni?'],
+                ['¿Cuánto cuesta?', 'Ikura (desu ka)?'], ['Todo junto / Separado', 'Isshoni / Betsubetsu ni'],
+                ['Me duele…', '(…) ga itai'], ['Cabeza / Estómago', 'atama / onaka'],
+                ['Brazo / Mano / Pierna / Pie', 'ude / te / ashi / ashi'], ['Medicina / Farmacia', 'kusuri / yakkyoku'],
+                ['¡Socorro!', 'Tasukete!']
+            ];
+            const grid = document.getElementById('vocab-grid');
+            const search = document.getElementById('vocab-search');
+            const count = document.getElementById('vocab-count');
+            const empty = document.getElementById('vocab-empty');
+            const render = () => {
+                const query = search.value.trim().toLocaleLowerCase();
+                const filtered = entries.filter(([es, jp]) => `${es} ${jp}`.toLocaleLowerCase().includes(query));
+                grid.innerHTML = filtered.map(([es, jp]) => `<dl class="vocab-card"><dt>${es}</dt><dd>${jp}</dd></dl>`).join('');
+                count.textContent = `${filtered.length} ${filtered.length === 1 ? 'expresión' : 'expresiones'}`;
+                empty.hidden = filtered.length > 0;
+            };
+            search.addEventListener('input', render);
+            render();
+        }
 
         function setupTabs() {
             const tabs = document.querySelectorAll('.tab');
