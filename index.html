@@ -1135,10 +1135,10 @@
         }
 
         function updateDashboard() {
-            const packing = document.querySelectorAll('#maletas .checklist input:not(:checked)').length;
+            const packing = document.querySelectorAll('#maletas tbody tr').length;
             const total = Array.from(document.querySelectorAll('.budget-input')).reduce((sum, input) => sum + (Number(input.value) || 0), 0);
-            const packingEl = document.getElementById('packing-count'); if (packingEl) packingEl.textContent = packing;
-            const budgetEl = document.getElementById('budget-total'); if (budgetEl) budgetEl.textContent = total ? `${total.toLocaleString('es-ES')} €` : '—';
+            const packingEl = document.getElementById('packing-count'); if (packingEl) packingEl.textContent = `${packing} pasos`;
+            const budgetEl = document.getElementById('budget-total'); if (budgetEl) budgetEl.textContent = total ? `${total.toLocaleString('es-ES')} €` : '3.000 € / persona';
         }
 
         function setupItineraryControls() {
