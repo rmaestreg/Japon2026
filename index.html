@@ -515,6 +515,7 @@
                 <select id="map-day" class="budget-input" style="margin:8px 0 14px; max-width:280px;">
                     <option value="all">Todo el viaje</option>
                 </select>
+                <a id="public-route" class="secondary-action" href="https://www.google.com/maps" target="_blank" rel="noopener">Abrir Google Maps</a>
                 <div id="map"></div>
                 <div id="map-itinerary">
                     <h3>Itinerario local</h3>
@@ -1065,7 +1066,10 @@
                     history.replaceState(null, '', `#${targetId}`);
                 }
                 if (targetId === 'itinerario' && window.tripMap) {
-                    window.setTimeout(() => window.tripMap.invalidateSize({ animate: false }), 120);
+                    window.setTimeout(() => {
+                        window.tripMap.invalidateSize({ animate: false });
+                        if (window.tripMapBounds?.length) window.tripMap.fitBounds(window.tripMapBounds, { padding: [24, 24], maxZoom: 10 });
+                    }, 120);
                 }
                 const tabBar = document.querySelector('.tab-bar');
                 const offset = (tabBar ? tabBar.offsetHeight : 0) + 12;
@@ -1298,6 +1302,7 @@
                             marker.bindPopup(content);
                         });
                         if (bounds.length) map.fitBounds(bounds, { padding: [24, 24], maxZoom: 10 });
+                        window.tripMapBounds = bounds;
                         setupMapDayFilter(markers, map);
 
                         map.on('popupopen', e => {
@@ -1347,8 +1352,23 @@
                     const points = visible.map(item => item.marker.getLatLng());
                     if (points.length > 1) routeLines.push(L.polyline(points, { color: '#8f2727', weight: 5, opacity: 0.8, dashArray: '10 8' }).addTo(map));
                 }
+                updatePublicRouteLink(selected, visible);
                 if (visible.length) map.fitBounds(visible.map(item => item.marker.getLatLng()), { padding: [24,24], maxZoom: 14 });
             });
+        }
+
+        function updatePublicRouteLink(day, visible) {
+            const link = document.getElementById('public-route');
+            if (!link) return;
+            if (day === 'all') { link.href = 'https://www.google.com/maps'; link.textContent = 'Abrir Google Maps'; link.hidden = false; return; }
+            if (visible.length < 2) { link.href = 'https://www.google.com/maps'; link.textContent = 'Abrir Google Maps'; link.hidden = false; return; }
+            const points = visible.map(item => `${item.marker.getLatLng().lat},${item.marker.getLatLng().lng}`);
+            const origin = points.shift();
+            const destination = points.pop() || origin;
+            const waypoints = points.length ? `&waypoints=${encodeURIComponent(points.join('|'))}` : '';
+            link.href = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${waypoints}&travelmode=transit`;
+            link.textContent = 'Ver ruta en transporte público';
+            link.hidden = false;
         }
     </script>
 </body>
