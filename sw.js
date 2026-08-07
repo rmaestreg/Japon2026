@@ -1,4 +1,4 @@
-const CACHE_NAME = 'japon2026-cache-v2';
+const CACHE_NAME = 'japon2026-cache-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -33,6 +33,21 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET') {
+    return;
+  }
+
+  // Para la página principal se intenta primero la red, evitando servir una
+  // versión antigua indefinidamente; el resto de recursos mantiene cache-first.
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, responseClone));
+          return response;
+        })
+        .catch(() => caches.match(request).then(cached => cached || caches.match('./offline.html')))
+    );
     return;
   }
 
