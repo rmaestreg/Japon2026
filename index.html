@@ -22,6 +22,7 @@
     .hero-inner,.wrap{width:min(var(--max),calc(100% - 32px));margin:auto}.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.18em;color:#cbd5e1;font-weight:700}.hero h1{font-size:clamp(34px,6vw,66px);line-height:1.02;margin:10px 0 16px;letter-spacing:-.04em}.hero p{max-width:760px;color:#dbe4f0;font-size:18px;margin:0}
     .hero-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.pill{border:1px solid rgba(255,255,255,.18);padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.06);font-size:13px}
     .nav-shell{position:sticky;top:0;z-index:100;background:rgba(246,247,249,.93);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}.nav{width:min(var(--max),calc(100% - 24px));margin:auto;display:flex;gap:8px;overflow:auto;padding:10px 0;scrollbar-width:none}.nav::-webkit-scrollbar{display:none}.nav a{white-space:nowrap;color:#334155;background:white;border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:13px;font-weight:650;text-decoration:none}.nav a:hover{border-color:#cbd5e1;box-shadow:0 3px 10px rgba(15,23,42,.06)}
+    .nav a.active{color:white;background:var(--navy);border-color:var(--navy);box-shadow:0 3px 10px rgba(15,23,42,.18)}
     main.wrap{margin-top:-36px;position:relative;z-index:2;padding-bottom:70px}.section{margin-top:26px;scroll-margin-top:74px}.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px}.section-title{display:flex;justify-content:space-between;gap:12px;align-items:end;margin:0 0 14px}.section-title h2{font-size:28px;letter-spacing:-.03em;margin:0}.section-title p{margin:0;color:var(--muted);font-size:13px}.grid{display:grid;gap:14px}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
     .metric{padding:17px;border:1px solid var(--line);border-radius:15px;background:#fbfcfe}.metric .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.metric .v{font-size:21px;font-weight:800;margin-top:5px;letter-spacing:-.02em}.metric .s{font-size:12px;color:var(--muted);margin-top:3px}
     .route{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0 2px}.route span{font-weight:750;padding:8px 11px;border-radius:12px;background:#f8fafc;border:1px solid var(--line)}.route b{color:#94a3b8}
@@ -374,6 +375,17 @@ const phraseData=[
 ];
 function renderPhrases(q=''){q=q.trim().toLowerCase(); const root=document.getElementById('phrases'); const rows=phraseData.filter(x=>!q||x.join(' ').toLowerCase().includes(q)); root.innerHTML=rows.length?rows.map(x=>`<div class="phrase"><div class="jp">${x[0]}</div><div class="romaji">${x[1]}</div><div class="es">${x[2]}</div></div>`).join(''):'<p class="muted">No hay resultados.</p>';}
 document.getElementById('phraseSearch').addEventListener('input',e=>renderPhrases(e.target.value));
+
+const navLinks=[...document.querySelectorAll('.nav a[href^="#"]')];
+const navSections=navLinks.map(link=>document.querySelector(link.getAttribute('href'))).filter(Boolean);
+let pendingNavId=null;
+function setActiveNav(id){navLinks.forEach(link=>{const active=link.getAttribute('href')==='#'+id;link.classList.toggle('active',active);if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});}
+navLinks.forEach(link=>link.addEventListener('click',()=>{pendingNavId=link.getAttribute('href').slice(1);setActiveNav(pendingNavId);}));
+if('IntersectionObserver' in window){
+  const navObserver=new IntersectionObserver(entries=>{if(pendingNavId){const target=entries.find(entry=>entry.isIntersecting&&entry.target.id===pendingNavId);if(!target)return;pendingNavId=null;}const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];if(visible)setActiveNav(visible.target.id);},{rootMargin:'-90px 0px -60% 0px',threshold:[0,.15,.35,.6]});
+  navSections.forEach(section=>navObserver.observe(section));
+}
+setActiveNav(navSections[0]?.id||'resumen');
 window.addEventListener('load',()=>{initMap();renderTasks();renderPhrases(); if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}});
 </script>
 </body>
