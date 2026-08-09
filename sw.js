@@ -1,4 +1,4 @@
-const CACHE_NAME = 'japon2026-cache-v3';
+const CACHE_NAME = 'japon2026-cache-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -10,7 +10,14 @@ const ASSETS = [
   './offline.html',
   './sw.js',
   './data/places-sample.json',
-  './config.js'
+  './config.js',
+  './vendor/leaflet.js',
+  './vendor/leaflet.css',
+  './vendor/images/marker-icon.png',
+  './vendor/images/marker-icon-2x.png',
+  './vendor/images/marker-shadow.png',
+  './vendor/images/layers.png',
+  './vendor/images/layers-2x.png'
 ];
 
 self.addEventListener('install', event => {
