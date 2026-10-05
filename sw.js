@@ -1,4 +1,4 @@
-const CACHE_NAME = 'japon2026-cache-v4';
+const CACHE_NAME = 'japon2026-cache-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -10,7 +10,6 @@ const ASSETS = [
   './offline.html',
   './sw.js',
   './data/places-sample.json',
-  './config.js',
   './vendor/leaflet.js',
   './vendor/leaflet.css',
   './vendor/images/marker-icon.png',
