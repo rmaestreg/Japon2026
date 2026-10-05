@@ -436,10 +436,11 @@ function googleMapsUrl(pts){const labels=pts.map(p=>encodeURIComponent(p[2])).jo
 function initMap(){
   if(!window.L){document.getElementById('map').innerHTML='<p style="padding:20px">No se pudo cargar el mapa. Usa los enlaces de Google Maps.</p>';return;}
   map=L.map('map',{scrollWheelZoom:false}).setView([35.35,137.5],6);
-  // Voyager suele mostrar los topónimos japoneses transliterados al alfabeto latino.
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+  // CARTO Voyager ahora requiere una API key. OpenStreetMap no necesita
+  // credenciales para este mapa y evita dejar la capa base en blanco.
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     maxZoom:20,
-    attribution:'&copy; OpenStreetMap contributors &copy; CARTO'
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>'
   }).addTo(map);
   const select=document.getElementById('daySelect');
   select.innerHTML='<option value="all">Ruta completa</option>'+days.map((x,i)=>`<option value="${i}">${x.d} · ${x.name}</option>`).join('');
