@@ -1,4 +1,4 @@
-const CACHE_NAME = 'japon2026-cache-v5';
+const CACHE_NAME = 'japon2026-cache-v5-mobilefix';
 const ASSETS = [
   './',
   './index.html',

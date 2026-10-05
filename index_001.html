@@ -541,7 +541,7 @@
     .trip-auth-card p { margin:0 0 18px; color:#64748b; }
     .trip-auth-card label { display:block; margin-bottom:7px; font-size:13px; font-weight:750; }
     .trip-auth-row { display:flex; gap:9px; }
-    .trip-auth-row input { min-width:0; flex:1; border:1px solid #cbd5e1; border-radius:11px; padding:11px 12px; font:inherit; outline:none; }
+    .trip-auth-row input { min-width:0; flex:1; border:1px solid #cbd5e1; border-radius:11px; padding:11px 12px; font:inherit; font-size:16px; outline:none; }
     .trip-auth-row input:focus { border-color:#334155; box-shadow:0 0 0 3px rgba(51,65,85,.12); }
     .trip-auth-row button { border:0; border-radius:11px; padding:11px 15px; background:#0f172a; color:#fff; font:inherit; font-weight:800; cursor:pointer; }
     #trip-auth-error { min-height:20px; margin:9px 0 0; color:#be123c; font-size:13px; }
@@ -563,7 +563,7 @@
     <p>Introduce la contraseña del viaje para acceder a la guía.</p>
     <label for="trip-auth-password">Contraseña</label>
     <div class="trip-auth-row">
-      <input id="trip-auth-password" type="password" inputmode="text" autocomplete="current-password" required autofocus />
+      <input id="trip-auth-password" type="password" inputmode="text" autocomplete="current-password" required />
       <button type="submit">Entrar</button>
     </div>
     <div id="trip-auth-error" aria-live="polite"></div>
@@ -1575,6 +1575,7 @@
   const input=document.getElementById('trip-auth-password');
   const error=document.getElementById('trip-auth-error');
   const unlock=()=>{
+    try { input.blur(); } catch (_) {}
     document.documentElement.classList.add('trip-auth-ok');
     gate.hidden=true;
     try { sessionStorage.setItem('jp2026-auth','1'); } catch (_) {}
