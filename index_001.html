@@ -530,9 +530,47 @@
             }
         }
     </style>
+
+  <style id="privacy-gate-style">
+    html:not(.trip-auth-ok) body > *:not(#trip-auth-gate) { visibility:hidden !important; }
+    #trip-auth-gate { position:fixed; inset:0; z-index:2147483647; display:grid; place-items:center; padding:24px; background:linear-gradient(135deg,#0b1222 0%,#18253e 72%,#273b61 100%); color:#fff; font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    #trip-auth-gate[hidden] { display:none !important; }
+    .trip-auth-card { width:min(420px,100%); background:rgba(255,255,255,.98); color:#14213d; border-radius:20px; padding:28px; box-shadow:0 24px 70px rgba(0,0,0,.35); }
+    .trip-auth-kicker { margin:0 0 6px; color:#64748b; font-size:12px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+    .trip-auth-card h1 { margin:0 0 8px; font-size:28px; letter-spacing:-.03em; }
+    .trip-auth-card p { margin:0 0 18px; color:#64748b; }
+    .trip-auth-card label { display:block; margin-bottom:7px; font-size:13px; font-weight:750; }
+    .trip-auth-row { display:flex; gap:9px; }
+    .trip-auth-row input { min-width:0; flex:1; border:1px solid #cbd5e1; border-radius:11px; padding:11px 12px; font:inherit; outline:none; }
+    .trip-auth-row input:focus { border-color:#334155; box-shadow:0 0 0 3px rgba(51,65,85,.12); }
+    .trip-auth-row button { border:0; border-radius:11px; padding:11px 15px; background:#0f172a; color:#fff; font:inherit; font-weight:800; cursor:pointer; }
+    #trip-auth-error { min-height:20px; margin:9px 0 0; color:#be123c; font-size:13px; }
+    .trip-auth-note { margin-top:14px !important; font-size:12px; }
+  </style>
+  <script>
+    (()=>{
+      try { if (sessionStorage.getItem('jp2026-auth') === '1') document.documentElement.classList.add('trip-auth-ok'); } catch (_) {}
+    })();
+  </script>
+
 </head>
 
 <body>
+<div id="trip-auth-gate" role="dialog" aria-modal="true" aria-labelledby="trip-auth-title">
+  <form class="trip-auth-card" id="trip-auth-form" autocomplete="off">
+    <p class="trip-auth-kicker">Acceso privado</p>
+    <h1 id="trip-auth-title">Japón 2026</h1>
+    <p>Introduce la contraseña del viaje para acceder a la guía.</p>
+    <label for="trip-auth-password">Contraseña</label>
+    <div class="trip-auth-row">
+      <input id="trip-auth-password" type="password" inputmode="text" autocomplete="current-password" required autofocus />
+      <button type="submit">Entrar</button>
+    </div>
+    <div id="trip-auth-error" aria-live="polite"></div>
+    <p class="trip-auth-note">El acceso se mantiene mientras esta sesión del navegador permanezca abierta.</p>
+  </form>
+</div>
+
     <header><!-- Contenido del header eliminado por petición del usuario --></header>
     <!-- Sección <nav> eliminada por petición del usuario -->
     <div class="tab-bar" role="tablist" aria-label="Secciones principales">
@@ -1528,6 +1566,35 @@
             link.hidden = false;
         }
     </script>
+
+<script id="trip-auth-script">
+(()=>{
+  const EXPECTED='6f9ded2ac8d9be96c609295ba64dfad8e606675d6548a3f02431c5f7e992221a';
+  const gate=document.getElementById('trip-auth-gate');
+  const form=document.getElementById('trip-auth-form');
+  const input=document.getElementById('trip-auth-password');
+  const error=document.getElementById('trip-auth-error');
+  const unlock=()=>{
+    document.documentElement.classList.add('trip-auth-ok');
+    gate.hidden=true;
+    try { sessionStorage.setItem('jp2026-auth','1'); } catch (_) {}
+  };
+  if(document.documentElement.classList.contains('trip-auth-ok')){ gate.hidden=true; return; }
+  const sha256=async(value)=>{
+    const bytes=new TextEncoder().encode(value);
+    const digest=await crypto.subtle.digest('SHA-256',bytes);
+    return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  };
+  form.addEventListener('submit',async(e)=>{
+    e.preventDefault(); error.textContent='';
+    try {
+      if(await sha256(input.value)===EXPECTED) unlock();
+      else { error.textContent='Contraseña incorrecta.'; input.select(); }
+    } catch (_) { error.textContent='No se pudo validar la contraseña en este navegador.'; }
+  });
+})();
+</script>
+
 </body>
 
 </html>
