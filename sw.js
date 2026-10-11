@@ -1,4 +1,4 @@
-const CACHE_NAME = 'japon2026-cache-v7-esri-map';
+const CACHE_NAME = 'japon2026-cache-v8-20261011';
 const ASSETS = [
   './',
   './index.html',
